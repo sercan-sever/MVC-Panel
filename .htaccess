@@ -1,0 +1,47 @@
+RewriteEngine On
+
+# Eğer kök dizine erişim varsa, index.php'ye yönlendirme yap
+RewriteCond %{REQUEST_URI} ^/$
+RewriteRule ^ index.php [L]
+
+# Giriş ve kullanıcı yönetimi sayfalarına doğrudan erişimi engelle, yönlendirme sağla
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^login$ login.php [L]
+RewriteRule ^users$ users.php [L]
+
+# Dizine doğrudan erişimi engelle
+Options -Indexes
+
+# Dosya uzantılarını gizle
+RewriteRule ^login$ login.php [L]
+RewriteRule ^users$ users.php [L]
+
+# Hatalı girişlerde hata sayfasına yönlendirme
+ErrorDocument 403 /403
+ErrorDocument 404 /404
+
+# MIME tiplerini ayarla ve güvenliği artır
+AddType application/x-javascript js
+AddType text/css css
+
+# Tarayıcı önbellekleme
+<ifModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType text/css "access plus 1 week"
+    ExpiresByType application/javascript "access plus 1 week"
+</ifModule>
+
+# XSS koruması
+Header set X-XSS-Protection "1; mode=block"
+
+# Cross-Site Scripting ve Clickjacking için güvenlik başlıkları
+Header set X-Content-Type-Options "nosniff"
+Header set X-Frame-Options "DENY"
+
+# Şifre sıfırlama ve giriş işlemleri için POST metodu kullanıldığını doğrulayın
+<ifModule mod_rewrite.c>
+    RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK)
+    RewriteRule .* - [F]
+</ifModule>
